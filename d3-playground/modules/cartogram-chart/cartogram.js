@@ -1,3 +1,23 @@
+/**
+ * SOME TODOs:
+ * 
+ * Style:
+ * 1. Make the state names in the center
+ * 2. Align chart text left
+ * 3. Make it feel like a webpage (grey margins? Sections indication?)
+ * 4. Fix font sizing
+ * 5. Horizontal Legend
+ * 6. Try Red/Blue color scheme
+ * 
+ * Functionality:
+ * 1. Tooltips when hovering over the state circles
+ * 2. Increase the clickable area of the radio buttons and add hover icon https://uxplanet.org/radio-buttons-ux-design-588e5c0a50dc
+ * 
+ * Critical
+ * 1. Sometimes the obesity values on the Y axis are wrong
+ * 2. Add exercise data
+ */
+
 import drawLineChart from '../../modules/line-chart/line-chart.js'
 
 const geoPath = d3.geoPath();
@@ -42,7 +62,7 @@ const createBaseMap = (stateBoundaries, nation) => {
   const svg_height = height + margin.top + margin.bottom
   svg = d3
     .select("#cartogram-svg")
-    .attr("viewBox", `-20 -20 ${svg_width} ${690}`)
+    .attr("viewBox", `-30 -20 ${svg_width} ${690}`)
 
   svg
     .append('g')
@@ -128,7 +148,7 @@ const drawCartogram = async () => {
   bubbles_group = bubbles_group
     .join("g")
     .classed('scatterBubbleGroup', true)
-    .on("click", function (d) { debugger; click(d) })
+    .on("click", d => click(d))
   // .style('opacity', '50%')
 
 
@@ -193,7 +213,8 @@ const drawCartogram = async () => {
     const lineChart = d3.select(".line-chart")
       .remove()
     drawLineChart(stateName, category);
-    d3.select("#line-heading").text("How do different factors correlate with Obesity for " + stateName + "?")
+    d3.select("#line-heading")
+      .text("How do different factors correlate with Obesity for " + stateName + "?")
       .style("display", "block");
     d3.select("#lineChart-radioInputs").style("display", "block");
   }
@@ -210,7 +231,7 @@ const drawCartogram = async () => {
       .style("display", "block");
     const radios = buttons_container.selectAll('input')
     radios.on("change", function () {
-      debugger;
+
       window.selected_category = this.value;
       redrawLineChart(state, this.value)
     })
@@ -237,7 +258,6 @@ const drawCartogram = async () => {
     }
   }
 
-
   const playButton = d3.select("#play-button")
     .on("click", function () {
       var button = d3.select(this);
@@ -255,17 +275,23 @@ const drawCartogram = async () => {
     })
 };
 
-const updateScatter = (chosenXAxis, value) => {
+const updateScatter = (caller) => {
+  console.log(caller)
+  const id = caller.id
+  const chosenXAxis = id
+  const axisLabel = caller.text;
+
+
+
   cartogramControls = d3.select("#cartogram_controls_container").style('opacity', '0')
   d3.selectAll(".x").remove()
 
-  d3.selectAll('#correlation_selection a').classed('selected-axis', false)
+  d3.selectAll('.scatter-x-axis').classed('selected-axis', false)
   d3.select(`#${chosenXAxis}`).classed('selected-axis', true)
 
   d3.select(`#chart-title`).text('Correlations Discovered Between Obesity And Poverty, Age, Income, Healthcare And Smoking.')
   d3.select(`#chart-description`).text('Interesting insight:')
 
-  const id = value.id
   d3.select(`#chart-description`).text(chartsInfo[id])
 
   const scatterData = d3.values(combined_data)
@@ -317,7 +343,7 @@ const updateScatter = (chosenXAxis, value) => {
   xAxisDraw
     .attr('transform', `translate(0, ${height})`)
     .call(xAxis)
-    .call(addLabel, chosenXAxis, 30, 8)
+    .call(addLabel, axisLabel, 30, 8)
 
   xAxisDraw.selectAll('text').attr('dy', '1em');
 
@@ -441,11 +467,16 @@ const updateYear = (year) => {
 drawCartogram()
 // update('income')
 // setTimeout(() => update('income'), 300)
-d3.select('#income').on('click', function () { updateScatter('income', this) })
-d3.select('#smokes').on('click', function () { updateScatter('smokes', this) })
-d3.select('#age').on('click', function () { updateScatter('age', this) })
-d3.select('#poverty').on('click', function () { updateScatter('poverty', this) })
-d3.select('#healthcare').on('click', function () { updateScatter('healthcare', this) })
+// d3.select('#income').on('click', function () { updateScatter('income', this) })
+// d3.select('#smokes').on('click', function () { updateScatter('smokes', this) })
+// d3.select('#age').on('click', function () { updateScatter('age', this) })
+// d3.select('#poverty').on('click', function () { updateScatter('poverty', this) })
+// d3.select('#healthcare').on('click', function () { updateScatter('healthcare', this) })
+
+d3.selectAll('.scatter-x-axis')
+  .on('click', function (e) { updateScatter(this); })
+
+
 d3.select('#backToMap').on('click', function () { updateCartogram() })
 
 d3.select('input[type=range]#cartogram_year').on('input', function () {
